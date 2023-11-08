@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <script src="https://kit.fontawesome.com/e716293f7e.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: cursive;
+        }
+    
+        .container {
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(#333, #111);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    
+        .player {
+            width: 400px;
+            margin: auto;
+            padding: 30px 40px;
+            background-color: #cbc3e3;
+            border-radius: 10px;
+            text-align: center;
+        }
+    
+        nav {
+            display: flex;
+            justify-content: space-between;
+        }
+    
+        nav .circle {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            line-height: 35px;
+            color: #000;
+            ;
+            background: #eee;
+        }
+    
+        .player h1 {
+            font-size: 20px;
+            font-weight: 500;
+            margin-top: 20px;
+            color: #444
+        }
+    
+        #progress {
+            height: 5px;
+            background: #333;
+            margin: 40px;
+            cursor: pointer;
+        }
+    
+        #progress::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            border-radius: 50%;
+            border: 5px solid;
+            border-color: #fff;
+            height: 25px;
+            width: 25px
+        }
+    
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        .controls div {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            border-radius: 50%;
+            color: #333;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            margin: 20px;
+        }
+    
+        .name {
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="player">
+            <h1 class="name"></h1>
+            <audio id="song" controls>
+                <source id="audioSource" type="audio/mpeg">
+            </audio>
+            <input type="range" value="0" id="progress">
+            <div class="controls">
+                <div onclick="prev()"><i class="fa-solid fa-backward" id="prevIcon"></i></div>
+                <div onclick="shuffle()"><i class="fa-solid fa-shuffle" id="shuffleIcon" class="shuffle"></i></div>
+                <div onclick="playPause()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+                <div onclick="next()"><i class="fa-solid fa-forward" id="nextIcon"></i></div>
+            </div>
+        </div>
+        <div id="songList">
+            {% for i in range(1, 49) %}
+            <button class="songButton" data-song="{{ i }}">Audio{{ i }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+       
+        const song = document.getElementById('song');
+        const audioSource = document.getElementById('audioSource');
+        const progress = document.getElementById('progress');
+        const songList = document.getElementById('songList');
+    
+        let currentSong = 1; 
+    
+       
+        function playPause() {
+            if (song.paused || song.ended) {
+                song.play();
+                document.getElementById('ctrlIcon').className = 'fa-solid fa-pause';
+            } else {
+                song.pause();
+                document.getElementById('ctrlIcon').className = 'fa-solid fa-play';
+            }
+        }
+    
+        function updateSongTitle(songNumber) {
+        const titleElement = document.querySelector('.name');
+        titleElement.textContent = `Audio${songNumber}`;
+    }
+    function updateProgress() {
+        const song = document.getElementById('song');
+        const progress = document.getElementById('progress');
+        progress.value = (song.currentTime / song.duration) * 100 || 0;
+    }
+    song.addEventListener('timeupdate', function () {
+        updateProgress();
+    });
+    progress.addEventListener('change', function () {
+        const progressValue = this.value;
+        const duration = song.duration;
+        song.currentTime = (progressValue * duration) / 100;
+    });
+        function loadSong(songNumber) {
+            audioSource.src = `/audio/${songNumber}`;
+            song.load();
+            playPause(); 
+            updateSongTitle(songNumber);
+            currentSong = songNumber;
+        }
+    
+       
+        const songButtons = document.getElementsByClassName('songButton');
+        for (const button of songButtons) {
+            button.addEventListener('click', function () {
+                const selectedSong = this.getAttribute('data-song');
+                loadSong(selectedSong);
+                currentSong = selectedSong;
+            });
+        }
+    
+       
+        function next() {
+            currentSong++;
+            if (currentSong > 48) {
+                currentSong = 1;
+            }
+            loadSong(currentSong);
+        }
+        function prev() {
+            currentSong--;
+            if (currentSong < 1) {
+                currentSong = 48;
+            }
+            loadSong(currentSong);
+        }
+    
+       
+        function shuffle() {
+            const randomSong = Math.floor(Math.random() * 48) + 1;
+            loadSong(randomSong);
+        }
+       
+
+       
+        song.addEventListener('timeupdate', function () {
+            const time = song.currentTime;
+            const duration = song.duration;
+            progress.value = (time / duration) * 100;
+        });
+    
+        
+        progress.addEventListener('change', function () {
+            const progressValue = this.value;
+            const duration = song.duration;
+            song.currentTime = (progressValue * duration) / 100;
+        });
+    
+        
+        loadSong(currentSong);
+    </script>
+</body>
+
+</html>
+
